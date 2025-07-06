@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мини-манга</title>
+    <style>
+        /* Общие стили */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #f9f9f9;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .page {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .page.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .content {
+            max-width: 80%;
+            margin: 0 auto;
+        }
+
+        .text {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 20px;
+            animation: fadeInText 2s ease-in-out;
+            position: relative;
+            opacity: 0;
+        }
+
+        .line-by-line span {
+            display: inline-block;
+            opacity: 0;
+            animation: fadeInLine 0.5s ease-in-out forwards;
+        }
+
+        .line-by-line span:nth-child(1) { animation-delay: 0.5s; }
+        .line-by-line span:nth-child(2) { animation-delay: 1s; }
+        .line-by-line span:nth-child(3) { animation-delay: 1.5s; }
+
+        .next-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #ff6f61;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .next-button:hover {
+            background-color: #e55c51;
+            transform: scale(1.1);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .prize {
+            animation: appear 2s ease-in-out;
+        }
+
+        /* Анимации */
+        @keyframes fadeInText {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInLine {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes appear {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Эффекты падения снежинок */
+        .snowflake {
+            position: absolute;
+            font-size: 2rem;
+            color: white;
+            animation: fallSnow linear infinite;
+            transform: rotate(0deg);
+        }
+
+        @keyframes fallSnow {
+            0% {
+                transform: translateY(-100%) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Эффекты падения листьев */
+        .leaf {
+            position: absolute;
+            font-size: 2rem;
+            color: orange;
+            animation: fallLeaf linear infinite;
+            transform: rotate(0deg);
+        }
+
+        @keyframes fallLeaf {
+            0% {
+                transform: translateY(-100%) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Конфетти */
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: rgba(255, 111, 97, 0.8);
+            border-radius: 50%;
+            animation: confettiFall linear infinite;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100%) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Фоновые градиенты */
+        #page1 {
+            background: linear-gradient(to bottom, #87CEEB, #FFFFFF);
+        }
+
+        #page2 {
+            background: linear-gradient(to bottom, #FFD700, #FFFFFF);
+        }
+
+        #page3 {
+            background: linear-gradient(to bottom, #FF6F61, #FFFFFF);
+        }
+
+        #prize {
+            background: linear-gradient(to bottom, #FFD700, #FF6F61);
+        }
+
+        /* Звуки */
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Фоновая музыка -->
+    <audio id="background-music" autoplay loop>
+        <source src="assets/music.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Звуковые эффекты -->
+    <audio id="click-sound">
+        <source src="assets/click.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Страница 1 -->
+    <div class="page active" id="page1">
+        <div class="content">
+            <p id="text1" class="text line-by-line">
+                <span>Наша история началась 4 месяца назад...</span>
+                <span>Мы встретились случайно, но это было судьбой.</span>
+                <span>С тех пор каждый день стал особенным.</span>
+            </p>
+            <button class="next-button" onclick="playSound(); nextPage('page2')">Далее</button>
+        </div>
+    </div>
+
+    <!-- Страница 2 -->
+    <div class="page" id="page2">
+        <div class="content">
+            <p id="text2" class="text line-by-line">
+                <span>Мы прошли через многое вместе...</span>
+                <span>Воспоминания о наших приключениях бесценны.</span>
+                <span>Каждый момент с тобой — это счастье.</span>
+            </p>
+            <button class="next-button" onclick="playSound(); nextPage('page3')">Далее</button>
+        </div>
+    </div>
+
+    <!-- Страница 3 -->
+    <div class="page" id="page3">
+        <div class="content">
+            <p id="text3" class="text line-by-line">
+                <span>И сегодня я хочу сделать этот день особенным для тебя...</span>
+                <span>Подготовил что-то особенное.</span>
+                <span>Готова узнать?</span>
+            </p>
+            <button class="next-button" onclick="playSound(); nextPage('prize')">Далее</button>
+        </div>
+    </div>
+
+    <!-- Приз -->
+    <div class="page" id="prize">
+        <div class="content">
+            <p id="text4" class="text">
+                Сюрприз! 🎉 Это твой подарок — палетка Dior!<br>Жду тебя в ресторане, чтобы отпраздновать нашу любовь!
+            </p>
+        </div>
+    </div>
+
+    <!-- Падающие снежинки -->
+    <div class="snowflakes">
+        <div class="snowflake" style="left: 10%; animation-duration: 5s;">❄️</div>
+        <div class="snowflake" style="left: 25%; animation-duration: 7s;">❄️</div>
+        <div class="snowflake" style="left: 40%; animation-duration: 6s;">❄️</div>
+        <div class="snowflake" style="left: 55%; animation-duration: 8s;">❄️</div>
+        <div class="snowflake" style="left: 70%; animation-duration: 5s;">❄️</div>
+    </div>
+
+    <div class="leaves">
+        <div class="leaf" style="left: 10%; animation-duration: 6s;">🍂</div>
+        <div class="leaf" style="left: 25%; animation-duration: 7s;">🍂</div>
+        <div class="leaf" style="left: 40%; animation-duration: 5s;">🍂</div>
+        <div class="leaf" style="left: 55%; animation-duration: 8s;">🍂</div>
+        <div class="leaf" style="left: 70%; animation-duration: 6s;">🍂</div>
+    </div>
+
+    <!-- Конфетти -->
+    <div class="confetti-container">
+        <div class="confetti" style="left: 10%; animation-duration: 3s;"></div>
+        <div class="confetti" style="left: 25%; animation-duration: 4s;"></div>
+        <div class="confetti" style="left: 40%; animation-duration: 3.5s;"></div>
+        <div class="confetti" style="left: 55%; animation-duration: 4.5s;"></div>
+        <div class="confetti" style="left: 70%; animation-duration: 3s;"></div>
+    </div>
+
+    <script>
+        function nextPage(pageId) {
+            const currentPage = document.querySelector('.page.active');
+            currentPage.classList.remove('active');
+            currentPage.style.opacity = 0;
+
+            const nextPage = document.getElementById(pageId);
+            setTimeout(() => {
+                nextPage.classList.add('active');
+                nextPage.style.opacity = 1;
+            }, 500);
+        }
+
+        function playSound() {
+            const clickSound = document.getElementById('click-sound');
+            clickSound.currentTime = 0;
+            clickSound.play();
+        }
+
+        window.addEventListener('beforeunload', () => {
+            const music = document.getElementById('background-music');
+            music.pause();
+        });
+    </script>
+</body>
+</html>

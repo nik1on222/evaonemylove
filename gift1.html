@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Магазин Любви</title>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #fff0f5, #ffe6f0);
+      color: #333;
+      min-height: 100%;
+      scroll-behavior: smooth;
+    }
+    .login-page, .main-page {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      flex-direction: column;
+      padding: 20px;
+      text-align: center;
+    }
+    .login-page.active, .main-page.active {
+      display: flex;
+    }
+    input[type="password"] {
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 50px;
+      border: 2px solid #ff69b4;
+      width: 100%;
+      max-width: 300px;
+      outline: none;
+      transition: all 0.3s;
+    }
+    input[type="password"]:focus {
+      box-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
+    }
+    button {
+      margin-top: 15px;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(to right, #ff69b4, #ff1493);
+      color: white;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(255, 105, 180, 0.3);
+    }
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(255, 105, 180, 0.4);
+    }
+    button:active {
+      transform: translateY(1px);
+    }
+    .products {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 25px;
+      padding: 20px;
+      width: 100%;
+      max-width: 1200px;
+    }
+    .product {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      padding: 25px;
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease;
+    }
+    .product:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    }
+    .product img {
+      width: 100%;
+      border-radius: 15px;
+      object-fit: contain;
+      height: 200px;
+      margin-bottom: 15px;
+      border: 2px solid #ffefef;
+      background: #fffafb;
+    }
+    h1 {
+      font-family: 'Pacifico', cursive;
+      color: #ff1493;
+      text-align: center;
+      margin: 20px 0;
+      font-size: 2.8rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    .product h3 {
+      color: #ff1493;
+      margin: 10px 0;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .product p {
+      background: #fffafb;
+      padding: 10px;
+      border-radius: 10px;
+      font-weight: bold;
+      margin: 10px 0 15px;
+    }
+    @media (max-width: 600px) {
+      .products { flex-direction: column; align-items: center; }
+      h1 { font-size: 2.2rem; }
+    }
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      display: none;
+      backdrop-filter: blur(5px);
+    }
+    .modal-content {
+      background: white;
+      padding: 40px;
+      border-radius: 25px;
+      text-align: center;
+      max-width: 90%;
+      width: 400px;
+      position: relative;
+      animation: fadeIn 0.5s ease;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-30px) scale(0.9); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+      100% { transform: translateY(0px); }
+    }
+    .heart {
+      position: absolute;
+      font-size: 24px;
+      color: #ff1493;
+      z-index: 10;
+      pointer-events: none;
+      animation: float 3s ease-in-out infinite;
+    }
+    .chest-container {
+      position: relative;
+      margin: 20px auto;
+      width: 200px;
+      height: 150px;
+    }
+    .chest {
+      width: 200px;
+      height: 100px;
+      background: #d2691e;
+      border-radius: 10px 10px 15px 15px;
+      position: absolute;
+      bottom: 0;
+      z-index: 2;
+      box-shadow: inset 0 -8px 0 rgba(139,69,19,0.5);
+    }
+    .chest-lid {
+      width: 220px;
+      height: 30px;
+      background: #8b4513;
+      border-radius: 15px 15px 5px 5px;
+      position: absolute;
+      top: 40px;
+      left: -10px;
+      transform-origin: bottom center;
+      transform: rotate(0deg);
+      transition: transform 1s ease;
+      z-index: 3;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+    }
+    .chest.open .chest-lid {
+      transform: rotate(-100deg);
+    }
+    .chest-content {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 1s ease 0.5s;
+      z-index: 1;
+      text-align: center;
+    }
+    .chest.open .chest-content {
+      opacity: 1;
+    }
+    .treasure {
+      width: 100px;
+      height: 100px;
+      background: gold;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      box-shadow: 0 0 20px rgba(255,215,0,0.8);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 10px rgba(255,215,0,0.8); }
+      50% { box-shadow: 0 0 30px rgba(255,215,0,0.9); }
+      100% { box-shadow: 0 0 10px rgba(255,215,0,0.8); }
+    }
+    #gameArea {
+      width: 300px;
+      height: 300px;
+      background: #ffe6f0;
+      border-radius: 15px;
+      position: relative;
+      overflow: hidden;
+      margin: 20px auto;
+      border: 3px solid #ff69b4;
+    }
+    #targetHeart {
+      position: absolute;
+      font-size: 40px;
+      transition: transform 0.1s;
+    }
+    .scratch-container {
+      margin: 15px auto;
+      position: relative;
+      width: 250px;
+      height: 120px;
+    }
+    #scratchCanvas {
+      background: #f0f0f0;
+      border-radius: 10px;
+      border: 2px dashed #ff69b4;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .scratch-message {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 15px;
+      font-weight: bold;
+      color: #ff1493;
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none;
+    }
+    .camera-container {
+      width: 300px;
+      height: 300px;
+      background: #333;
+      border-radius: 15px;
+      margin: 20px auto;
+      position: relative;
+      overflow: hidden;
+      border: 5px solid #fff;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+    .camera-lens {
+      width: 80px;
+      height: 80px;
+      background: #ff69b4;
+      border-radius: 50%;
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 5px solid #fff;
+    }
+    .camera-lens::before {
+      content: "";
+      width: 40px;
+      height: 40px;
+      background: #5c5c5c;
+      border-radius: 50%;
+    }
+    .camera-screen {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      background: linear-gradient(45deg, #ff69b4, #ff1493);
+    }
+    .flash {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .mirror-container {
+      width: 300px;
+      height: 300px;
+      background: #333;
+      border-radius: 15px;
+      margin: 20px auto;
+      position: relative;
+      overflow: hidden;
+      border: 10px solid #8b4513;
+      box-shadow: 0 0 30px rgba(0,0,0,0.4);
+    }
+    .mirror-frame {
+      width: 100%;
+      height: 100%;
+      background: #444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .mirror-glass {
+      width: 90%;
+      height: 90%;
+      background: linear-gradient(135deg, #e0e0e0, #c0c0c0);
+      border-radius: 5px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.5);
+    }
+    .mirror-reflection {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="100" cy="100" r="80" fill="%23ff1493" opacity="0.1"/></svg>');
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #ff1493;
+      text-align: center;
+      padding: 20px;
+      opacity: 0;
+      transition: opacity 1s;
+    }
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #ff69b4;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 18px;
+      z-index: 10;
+    }
+    .kiss-btn {
+      margin-top: 20px;
+      padding: 10px 25px;
+      font-size: 18px;
+      animation: pulse 2s infinite;
+    }
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 50px;
+      margin: 20px auto;
+      max-width: 300px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #ff1493;
+      font-weight: bold;
+    }
+    .hearts {
+      display: flex;
+      gap: 5px;
+    }
+    .heart-icon {
+      color: #ff1493;
+    }
+    .product-image {
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+    .product-image i {
+      font-size: 80px;
+      color: #ff69b4;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-page active" id="loginPage">
+  <h1>Добро пожаловать 💘</h1>
+  <p>Введи пароль, чтобы войти</p>
+  <input type="password" id="passwordInput" placeholder="Пароль...">
+  <button onclick="checkPassword()">Войти</button>
+  <p id="error" style="color: red; display: none; margin-top: 15px;">Неверный пароль! Попробуй снова</p>
+</div>
+
+<div class="main-page" id="mainPage">
+  <div class="status-bar">
+    <div class="status-item">
+      <i class="fas fa-user"></i>
+      <span>Ева</span>
+    </div>
+    <div class="status-item">
+      <span>Любовь:</span>
+      <div class="hearts">
+        <i class="fas fa-heart heart-icon"></i>
+        <i class="fas fa-heart heart-icon"></i>
+        <i class="fas fa-heart heart-icon"></i>
+        <i class="fas fa-heart heart-icon"></i>
+        <i class="fas fa-heart heart-icon"></i>
+      </div>
+    </div>
+  </div>
+
+  <h1>Магазин Любви 💖</h1>
+
+  <div class="products">
+    <!-- Beauty of Joseon -->
+    <div class="product">
+      <div class="product-image">
+        <i class="fas fa-pump-soap"></i>
+      </div>
+      <h3>Beauty of Joseon Glow Serum Propolis and Niacinamide</h3>
+      <p>Цена: 1 поцелуй 💋</p>
+      <div class="chest-container">
+        <div class="chest" id="magicChest">
+          <div class="chest-lid"></div>
+          <div class="chest-content">
+            <div class="treasure">
+              <i class="fas fa-pump-soap" style="font-size: 40px; color: #ff1493;"></i>
+            </div>
+            <p style="margin-top: 10px; font-weight: bold;">Ты заслужила это сокровище ✨</p>
+          </div>
+        </div>
+      </div>
+      <button onclick="openChest()">Открыть коробку</button>
+    </div>
+
+    <!-- SVR -->
+    <div class="product">
+      <div class="product-image">
+        <i class="fas fa-vial"></i>
+      </div>
+      <h3>SVR - антиоксидантна сироватка з витамином С</h3>
+      <p>Цена: Дать попу 🍓</p>
+      <button onclick="startGame()">Попади в сердце</button>
+    </div>
+
+    <!-- SKIN1004 -->
+    <div class="product">
+      <div class="product-image">
+        <i class="fas fa-spa"></i>
+      </div>
+      <h3>SKIN1004 - Madagascar Centella Tea-Trica</h3>
+      <p>Цена: 10 минут обнимашек в кроватки 🤗</p>
+      <div class="scratch-container">
+        <canvas id="scratchCanvas" width="250" height="120"></canvas>
+        <div class="scratch-message" id="scratchMessage">
+          Твоя награда — сыворотка и обнимашки 🥰
+        </div>
+      </div>
+      <button onclick="initScratch()">Стереть скретч</button>
+    </div>
+
+    <!-- CosDeBAHA -->
+    <div class="product">
+      <div class="product-image">
+        <i class="fas fa-flask"></i>
+      </div>
+      <h3>CosDeBAHA - AZ Azelaic Acid 10 Serum</h3>
+      <p>Цена: Сказать 3 причины, почему ты меня любишь 💘</p>
+      <button onclick="launchCamera()">Открыть камеру</button>
+    </div>
+
+    <!-- K-SECRET -->
+    <div class="product">
+      <div class="product-image">
+        <i class="fas fa-gem"></i>
+      </div>
+      <h3>K-SECRET - SEOUL 1988 Essence</h3>
+      <p>Цена: Примерить на меня "другую" Косметику ;) 😈</p>
+      <button onclick="showMirror()">Заглянуть в зеркало</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модальные окна -->
+<div class="modal" id="modalHeart">
+  <div class="modal-content">
+    <div class="close-btn" onclick="closeModal('modalHeart')">×</div>
+    <h3>🎯 Попади в сердце!</h3>
+    <div id="gameArea">
+      <div id="targetHeart">💖</div>
+    </div>
+    <button class="kiss-btn" onclick="shoot()">Поцеловать! 💋</button>
+    <p id="gameResult" style="margin-top: 20px; font-weight: bold; min-height: 30px;"></p>
+  </div>
+</div>
+
+<div class="modal" id="modalCamera">
+  <div class="modal-content">
+    <div class="close-btn" onclick="closeModal('modalCamera')">×</div>
+    <h3>📸 Фотокамера любви</h3>
+    <div class="camera-container">
+      <div class="camera-lens"></div>
+      <div class="camera-screen" id="cameraScreen">
+        Улыбнись! 😄 Покупка возможна только с хорошим настроением!
+      </div>
+      <div class="flash" id="flash"></div>
+    </div>
+    <p id="cameraStatus" style="margin-top: 15px; font-weight: bold;">Готовим камеру...</p>
+  </div>
+</div>
+
+<div class="modal" id="modalMirror">
+  <div class="modal-content">
+    <div class="close-btn" onclick="closeModal('modalMirror')">×</div>
+    <h3>🪞 Зеркало желания</h3>
+    <div class="mirror-container">
+      <div class="mirror-frame">
+        <div class="mirror-glass">
+          <div class="mirror-reflection" id="mirrorReflection"></div>
+        </div>
+      </div>
+    </div>
+    <p id="mirrorText" style="margin-top: 15px; font-weight: bold; min-height: 30px;">
+      Чтобы получить этот подарок, посмотри в глаза тому, кто тебя любит сильнее всех...
+    </p>
+  </div>
+</div>
+
+<script>
+  const correctPassword = "iloveyoueva";
+
+  function checkPassword() {
+    const input = document.getElementById("passwordInput").value;
+    if (input === correctPassword) {
+      document.getElementById("loginPage").classList.remove("active");
+      document.getElementById("mainPage").classList.add("active");
+      window.scrollTo(0, 0);
+      createHearts(20);
+    } else {
+      const errorEl = document.getElementById("error");
+      errorEl.style.display = "block";
+      errorEl.textContent = "Неверный пароль! Попробуй снова";
+      setTimeout(() => {
+        errorEl.style.display = "none";
+      }, 3000);
+    }
+  }
+
+  // Создание летающих сердечек
+  function createHearts(count) {
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        const heart = document.createElement("div");
+        heart.classList.add("heart");
+        heart.innerHTML = "❤️";
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.top = Math.random() * 100 + "vh";
+        heart.style.fontSize = Math.random() * 30 + 20 + "px";
+        heart.style.animationDuration = Math.random() * 3 + 2 + "s";
+        document.body.appendChild(heart);
+
+        setTimeout(() => {
+          heart.remove();
+        }, 5000);
+      }, i * 300);
+    }
+  }
+
+  // 1. Магическая коробочка
+  function openChest() {
+    const chest = document.getElementById("magicChest");
+    chest.classList.add("open");
+
+    // Звук открытия
+    const audio = new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_64a327e4f4.mp3');
+    audio.play();
+
+    // Анимация сердечек
+    createHearts(15);
+
+    // Показ содержимого
+    setTimeout(() => {
+      const content = chest.querySelector(".chest-content");
+      content.style.opacity = "1";
+    }, 1000);
+  }
+
+  // 2. Мини-игра: Попади в сердце
+  let heartInterval;
+  let heartPosition = { x: 150, y: 150 };
+  let heartSpeed = { x: 3, y: 3 };
+
+  function startGame() {
+    document.getElementById('modalHeart').style.display = 'flex';
+    document.getElementById('gameResult').textContent = "";
+    resetHeart();
+
+    heartInterval = setInterval(() => {
+      moveHeart();
+    }, 50);
+  }
+
+  function resetHeart() {
+    heartPosition = {
+      x: Math.random() * 260,
+      y: Math.random() * 260
+    };
+    document.getElementById('targetHeart').style.transform = `translate(${heartPosition.x}px, ${heartPosition.y}px)`;
+  }
+
+  function moveHeart() {
+    const gameArea = document.getElementById('gameArea');
+    const heart = document.getElementById('targetHeart');
+
+    heartPosition.x += heartSpeed.x;
+    heartPosition.y += heartSpeed.y;
+
+    if (heartPosition.x <= 0 || heartPosition.x >= 260) heartSpeed.x *= -1;
+    if (heartPosition.y <= 0 || heartPosition.y >= 260) heartSpeed.y *= -1;
+
+    heart.style.transform = `translate(${heartPosition.x}px, ${heartPosition.y}px)`;
+  }
+
+  function shoot() {
+    const resultEl = document.getElementById('gameResult');
+    const heartRect = document.getElementById('targetHeart').getBoundingClientRect();
+    const gameAreaRect = document.getElementById('gameArea').getBoundingClientRect();
+
+    // Проверяем попадание (сердечко в центре)
+    const centerX = gameAreaRect.left + gameAreaRect.width/2;
+    const centerY = gameAreaRect.top + gameAreaRect.height/2;
+    const heartCenterX = heartRect.left + heartRect.width/2;
+    const heartCenterY = heartRect.top + heartRect.height/2;
+
+    const distance = Math.sqrt(
+      Math.pow(centerX - heartCenterX, 2) +
+      Math.pow(centerY - heartCenterY, 2)
+    );
+
+    if (distance < 100) {
+      resultEl.textContent = "Попадание! Товар твой! 😍";
+      resultEl.style.color = "#ff1493";
+      clearInterval(heartInterval);
+
+      // Анимация сердечек
+      createHearts(10);
+
+      setTimeout(() => {
+        closeModal('modalHeart');
+      }, 2000);
+    } else {
+      resultEl.textContent = "Мимо! Попробуй еще раз! 😉";
+      resultEl.style.color = "#ff69b4";
+      // Увеличиваем скорость для сложности
+      heartSpeed.x *= 1.1;
+      heartSpeed.y *= 1.1;
+    }
+  }
+
+  // 3. Скретч-карта
+  let isScratching = false;
+  let canvas, ctx;
+
+  function initScratch() {
+    canvas = document.getElementById('scratchCanvas');
+    ctx = canvas.getContext('2d');
+
+    // Очистка холста
+    ctx.fillStyle = '#d3d3d3';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Текст
+    ctx.fillStyle = '#ff1493';
+    ctx.font = 'bold 18px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Потри меня! ✨', canvas.width/2, canvas.height/2);
+
+    // События
+    canvas.addEventListener('mousedown', startScratching);
+    canvas.addEventListener('touchstart', startScratching);
+    canvas.addEventListener('mousemove', scratch);
+    canvas.addEventListener('touchmove', scratch);
+    canvas.addEventListener('mouseup', stopScratching);
+    canvas.addEventListener('touchend', stopScratching);
+    canvas.addEventListener('mouseleave', stopScratching);
+  }
+
+  function startScratching(e) {
+    isScratching = true;
+    scratch(e);
+  }
+
+  function scratch(e) {
+    if (!isScratching) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX || e.touches[0].clientX) - rect.left;
+    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(x, y, 20, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Проверка, достаточно ли стёрто
+    checkScratchProgress();
+  }
+
+  function stopScratching() {
+    isScratching = false;
+  }
+
+  function checkScratchProgress() {
+    // Проверяем количество стёртых пикселей
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const pixels = imageData.data;
+    let transparentPixels = 0;
+
+    for (let i = 0; i < pixels.length; i += 4) {
+      if (pixels[i+3] === 0) {
+        transparentPixels++;
+      }
+    }
+
+    const percent = (transparentPixels / (pixels.length / 4)) * 100;
+
+    if (percent > 40) {
+      document.getElementById('scratchMessage').style.opacity = '1';
+      createHearts(5);
+    }
+  }
+
+  // 4. Фотокамера любви
+  function launchCamera() {
+    document.getElementById('modalCamera').style.display = 'flex';
+    document.getElementById('cameraStatus').textContent = "Готовим камеру...";
+
+    setTimeout(() => {
+      document.getElementById('cameraStatus').textContent = "Улыбаемся! Готовимся к снимку...";
+
+      let count = 3;
+      const countdown = setInterval(() => {
+        document.getElementById('cameraScreen').innerHTML = `Улыбнись! 😄<br>${count}`;
+        count--;
+
+        if (count < 0) {
+          clearInterval(countdown);
+          takePhoto();
+        }
+      }, 1000);
+    }, 1000);
+  }
+
+  function takePhoto() {
+    const flash = document.getElementById('flash');
+    flash.style.opacity = '0.9';
+
+    // Звук затвора
+    const audio = new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_bb630d0969.mp3');
+    audio.play();
+
+    setTimeout(() => {
+      flash.style.opacity = '0';
+      document.getElementById('cameraScreen').innerHTML = "Отличный снимок! 😍<br>Товар твой!";
+      document.getElementById('cameraStatus').textContent = "Покупка подтверждена!";
+
+      createHearts(5);
+
+      setTimeout(() => {
+        closeModal('modalCamera');
+      }, 3000);
+    }, 300);
+  }
+
+  // 5. Зеркало желания
+  function showMirror() {
+    document.getElementById('modalMirror').style.display = 'flex';
+    document.getElementById('mirrorText').textContent =
+      "Чтобы получить этот подарок, посмотри в глаза тому, кто тебя любит сильнее всех...";
+
+    document.getElementById('mirrorReflection').innerHTML = '';
+    document.getElementById('mirrorReflection').style.opacity = '0';
+
+    setTimeout(() => {
+      document.getElementById('mirrorText').textContent = "3...";
+      setTimeout(() => {
+        document.getElementById('mirrorText').textContent = "2...";
+        setTimeout(() => {
+          document.getElementById('mirrorText').textContent = "1...";
+          setTimeout(() => {
+            revealReflection();
+          }, 1000);
+        }, 1000);
+      }, 1000);
+    }, 1000);
+  }
+
+  function revealReflection() {
+    const reflection = document.getElementById('mirrorReflection');
+    reflection.style.opacity = '1';
+    reflection.innerHTML = '<div style="font-size: 40px; animation: pop 1s;">❤️</div><p style="margin-top: 20px; font-size: 20px;">Это ты, любимая! 💖</p>';
+
+    document.getElementById('mirrorText').textContent = "Ты заслужила этот подарок!";
+
+    createHearts(5);
+  }
+
+  // Общие функции
+  function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+
+    // Сброс игрового состояния
+    if (id === 'modalHeart') {
+      clearInterval(heartInterval);
+    }
+  }
+
+  // Инициализация скретча при загрузке
+  window.onload = initScratch;
+</script>
+
+</body>
+</html>

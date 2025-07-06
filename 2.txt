@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Магазин Любви</title>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: #fff0f5;
+      color: #333;
+    }
+    .login-page, .main-page {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+    .login-page.active, .main-page.active {
+      display: flex;
+    }
+    input[type="password"] {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 20px;
+      background-color: #ff69b4;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background-color: #ff1493;
+    }
+    .product {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin: 20px;
+      max-width: 300px;
+      text-align: center;
+    }
+    .products {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .product img {
+      width: 100%;
+      border-radius: 15px;
+    }
+    h1 {
+      font-family: 'Pacifico', cursive;
+      color: #ff1493;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-page active" id="loginPage">
+  <h1>Добро пожаловать 💘</h1>
+  <p>Введи пароль, чтобы войти</p>
+  <input type="password" id="passwordInput" placeholder="Пароль...">
+  <button onclick="checkPassword()">Войти</button>
+  <p id="error" style="color: red; display: none;">Неверный пароль!</p>
+</div>
+
+<div class="main-page" id="mainPage">
+  <h1>Магазин Любви 💄</h1>
+  <div class="products">
+    <div class="product">
+      <img src="1.jpg" alt="Beauty of Joseon">
+      <h3>Beauty of Joseon Glow Serum Propolis and Niacinamide</h3>
+      <p>Цена: 1 поцелуй 💋</p>
+      <button onclick="alert('Выполнено!')">Подтвердить</button>
+    </div>
+    <div class="product">
+      <img src="2.jpg" alt="SVR">
+      <h3>SVR - антиоксидантна сироватка з витамином С</h3>
+      <p>Цена: Завтрак в постель 🍓</p>
+      <button onclick="alert('Выполнено!')">Подтвердить</button>
+    </div>
+    <div class="product">
+      <img src="3.jpg" alt="SKIN1004">
+      <h3>SKIN1004 - Madagascar Centella Tea-Trica</h3>
+      <p>Цена: 10 минут обнимашек 🤗</p>
+      <button onclick="alert('Выполнено!')">Подтвердить</button>
+    </div>
+    <div class="product">
+      <img src="4.jpg" alt="CosDeBAHA">
+      <h3>CosDeBAHA - AZ Azelaic Acid 10 Serum</h3>
+      <p>Цена: Сказать 3 причины, почему ты меня любишь 💘</p>
+      <button onclick="alert('Выполнено!')">Подтвердить</button>
+    </div>
+    <div class="product">
+      <img src="5.jpg" alt="K-SECRET">
+      <h3>K-SECRET - SEOUL 1988 Essence</h3>
+      <p>Цена: Дать попу 😈</p>
+      <button onclick="alert('Выполнено!')">Подтвердить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const correctPassword = "iloveyoueva";
+
+  function checkPassword() {
+    const input = document.getElementById("passwordInput").value;
+    if (input === correctPassword) {
+      document.getElementById("loginPage").classList.remove("active");
+      document.getElementById("mainPage").classList.add("active");
+    } else {
+      document.getElementById("error").style.display = "block";
+    }
+  }
+</script>
+
+</body>
+</html>
