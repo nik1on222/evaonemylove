@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>История нас двоих — интерактивная манга</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#ff6b6b;--muted:#94a3b8;--glass:rgba(255,255,255,0.03)}
+    *{box-sizing:border-box}
+    body{font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin:0; background:linear-gradient(180deg,#071025 0%, #071b2a 100%); color:#e6eef8; display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px; overflow-x:hidden}
+    .app{width:100%; max-width:920px; display: none;} /* Скрываем приложение по умолчанию */
+
+    /* Стили для экрана пароля */
+    .password-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #071025 0%, #1a2b3c 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: opacity 0.5s ease;
+    }
+
+    .password-container {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 32px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(2, 6, 23, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .password-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent), #ff9b6b);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-weight: 700;
+      font-size: 28px;
+      color: #081124;
+      box-shadow: 0 0 25px rgba(255, 107, 107, 0.5);
+    }
+
+    .password-title {
+      margin: 0 0 10px;
+      font-size: 22px;
+    }
+
+    .password-subtitle {
+      color: var(--muted);
+      margin-bottom: 25px;
+      font-size: 14px;
+    }
+
+    .password-input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #e6eef8;
+      font-size: 16px;
+      margin-bottom: 20px;
+      transition: all 0.2s;
+    }
+
+    .password-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
+    }
+
+    .password-error {
+      color: #ff6b6b;
+      font-size: 14px;
+      margin-top: 10px;
+      min-height: 20px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .password-error.show {
+      opacity: 1;
+    }
+
+    .password-btn {
+      background: linear-gradient(90deg, var(--accent), #ff9b6b);
+      color: #081124;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+
+    .password-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(255, 107, 107, 0.3);
+    }
+
+    /* Остальные стили остаются без изменений */
+    header{display:flex; align-items:center; gap:16px; margin-bottom:18px}
+    .logo{width:72px; height:72px; border-radius:10px; background:linear-gradient(135deg,var(--accent),#ff9b6b); display:flex; align-items:center; justify-content:center; font-weight:700; color:#081124; box-shadow:0 0 20px rgba(255,107,107,0.4)}
+    h1{margin:0; font-size:20px}
+    .card{background:var(--card); border-radius:14px; padding:18px; box-shadow:0 6px 30px rgba(2,6,23,0.6)}
+    .stage{display:grid; grid-template-columns:1fr 360px; gap:18px}
+    .viewer{background:var(--glass); border-radius:12px; padding:16px; min-height:560px; display:flex; flex-direction:column; position:relative; overflow:hidden}
+    .page{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; text-align:left; padding:10px; opacity:0; transform:translateY(18px); transition:all .45s ease}
+    .page.show{opacity:1; transform:translateY(0)}
+    .page img{max-width:100%; max-height:220px; border-radius:8px; box-shadow:0 8px 30px rgba(2,6,23,0.6); margin-bottom:12px}
+
+    /* Messenger/dialogue styles */
+    .dialogue{display:flex; flex-direction:column; gap:10px; width:100%; max-width:760px; margin-top:10px}
+    .bubble{padding:10px 14px; border-radius:14px; max-width:75%; position:relative; word-wrap:break-word; opacity:0; transform:translateY(8px); transition:all .28s ease; box-shadow:0 6px 18px rgba(2,6,23,0.4)}
+    .bubble.me{align-self:flex-end; background:linear-gradient(90deg,var(--accent),#ff9b6b); color:#081124; border-bottom-right-radius:6px}
+    .bubble.eva{align-self:flex-start; background:rgba(255,255,255,0.03); color:#e6eef8; border-bottom-left-radius:6px}
+    .bubble.show{opacity:1; transform:translateY(0)}
+    .bubble .speaker{font-size:12px; opacity:.75; margin-bottom:6px}
+
+    .controls{display:flex; gap:8px; margin-top:12px; justify-content:center}
+    button{background:#0b2540;border:1px solid rgba(255,255,255,0.03); color:#e6eef8; padding:10px 12px; border-radius:8px; cursor:pointer; transition:all .18s}
+    button:hover{transform:translateY(-2px)}
+    button.primary{background:linear-gradient(90deg,var(--accent),#ff9b6b); color:#081124; font-weight:600}
+    .sidebar{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent); border-radius:10px; padding:12px}
+    h2{margin:6px 0 12px}
+    .chapter-list{display:flex; flex-direction:column; gap:8px; max-height:320px; overflow:auto}
+    .chapter{padding:8px; border-radius:8px; cursor:pointer; background:transparent; display:flex; justify-content:space-between; align-items:center; transition:all .12s}
+    .chapter:hover{background:rgba(255,255,255,0.03)}
+    .chapter.disabled{opacity:.5; cursor:not-allowed}
+    .chapter.active{background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.04)}
+    .tasks{margin-top:12px}
+    .task{display:flex; gap:8px; align-items:flex-start; margin-bottom:8px}
+    .task input{transform:scale(1.15)}
+    .final{display:none; padding:18px; border-radius:10px; text-align:center; animation:fadeIn 1s forwards}
+    .final.show{display:block}
+    .flower{width:200px; height:200px; margin:0 auto; animation:grow 1.6s ease forwards}
+    footer{margin-top:12px; display:flex; justify-content:space-between; align-items:center; color:var(--muted); font-size:13px}
+    .progress-bar{height:8px; background:rgba(255,255,255,0.07); border-radius:4px; margin-top:12px; overflow:hidden}
+    .progress{height:100%; width:0; background:linear-gradient(90deg,var(--accent),#ff9b6b); transition:width .35s}
+    @media (max-width:880px){.stage{grid-template-columns:1fr;}.sidebar{order:2}}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes grow{from{transform:scale(0.6);opacity:0}to{transform:scale(1);opacity:1}}
+
+    .modal{position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(rgba(3,6,12,0.6), rgba(3,6,12,0.6)); display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s}
+    .modal.show{opacity:1; pointer-events:auto}
+    .modal-content{background:linear-gradient(180deg,var(--card), rgba(11,17,32,0.9)); padding:20px; border-radius:14px; max-width:520px; text-align:center; box-shadow:0 12px 40px rgba(2,6,23,0.7); border:1px solid rgba(255,255,255,0.03)}
+    .modal-icon{font-size:36px; margin-bottom:8px}
+    .modal-content h3{margin:6px 0 6px; color:var(--accent)}
+    .modal-content p{color:var(--muted); margin:0}
+    .modal-actions{display:flex; gap:10px; justify-content:center; margin-top:14px}
+    .btn-ghost{background:transparent; border:1px solid rgba(255,255,255,0.06); color:var(--muted); padding:8px 12px; border-radius:8px}
+  </style>
+</head>
+<body>
+  <!-- Экран ввода пароля -->
+  <div class="password-screen" id="passwordScreen">
+    <div class="password-container">
+      <div class="password-logo">MN</div>
+      <h2 class="password-title">Доступ к истории</h2>
+      <p class="password-subtitle">Введите пароль для просмотра интерактивной манги</p>
+      <input type="password" class="password-input" id="passwordInput" placeholder="Введите пароль" />
+      <div class="password-error" id="passwordError">Неверный пароль. Попробуйте снова.</div>
+      <button class="password-btn" id="passwordBtn">Открыть историю</button>
+    </div>
+  </div>
+
+  <!-- Основное приложение (изначально скрыто) -->
+  <div class="app" id="app">
+    <header>
+      <div class="logo">MN</div>
+      <div>
+        <h1>«История нас двоих» — интерактивная манга</h1>
+        <div style="color:var(--muted); font-size:13px">Кликай по главам, выполняй задания и общайся как в мессенджере</div>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="stage">
+        <div class="viewer" id="viewer">
+          <div class="page" id="page" aria-live="polite"></div>
+
+          <div class="controls" id="controls">
+            <button id="prevBtn">◀ Назад</button>
+            <button id="nextBtn" class="primary">Вперёд ▶</button>
+          </div>
+
+          <div class="progress-bar" aria-hidden="true"><div id="progress" class="progress"></div></div>
+        </div>
+
+        <aside class="sidebar">
+          <h2>Главы</h2>
+          <div class="chapter-list" id="chapters" role="navigation" aria-label="Список глав"></div>
+
+          <div class="tasks" id="tasks">
+            <h3 style="margin:8px 0 8px">Задания</h3>
+            <div id="taskList"></div>
+          </div>
+
+          <div class="final" id="final" aria-hidden="true">
+            <h3>Награда</h3>
+            <p>Ты прошла все испытания — открой финальную страницу и получи награду в реальности.</p>
+            <div class="flower" id="flowerSVG" aria-hidden="true"></div>
+            <p style="margin-top:8px">🌹 Букет ждёт тебя</p>
+            <button id="claimBtn" class="primary">Я готов(а) принять подарок</button>
+          </div>
+        </aside>
+      </div>
+
+      <footer>
+        <div>Сделано с ❤️ — интерактив для вашей пары</div>
+        <div style="color:var(--muted)">Подсказка: выполняйте задания только по согласию</div>
+      </footer>
+    </div>
+  </div>
+
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-icon" id="modalIcon">💡</div>
+      <h3 id="modalTitle">Не спеши</h3>
+      <p id="modalText">Сначала выполни все задания этой главы, а потом переходи дальше.</p>
+      <div class="modal-actions">
+        <button id="modalClose" class="primary">Понял(а)</button>
+        <button id="modalShowTasks" class="btn-ghost">Показать задания</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === ПАРОЛЬ ДОСТУПА ===
+    const CORRECT_PASSWORD = "StoryOfLove";
+    const passwordScreen = document.getElementById('passwordScreen');
+    const passwordInput = document.getElementById('passwordInput');
+    const passwordBtn = document.getElementById('passwordBtn');
+    const passwordError = document.getElementById('passwordError');
+    const app = document.getElementById('app');
+
+    // Проверяем, был ли уже введен пароль в этой сессии
+    const isAuthenticated = sessionStorage.getItem('authenticated') === 'true';
+
+    if (isAuthenticated) {
+      // Если уже авторизован, скрываем экран пароля и показываем приложение
+      passwordScreen.style.display = 'none';
+      app.style.display = 'block';
+    }
+
+    // Обработчик нажатия на кнопку входа
+    passwordBtn.addEventListener('click', checkPassword);
+
+    // Обработчик нажатия Enter в поле пароля
+    passwordInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        checkPassword();
+      }
+    });
+
+    function checkPassword() {
+      if (passwordInput.value === CORRECT_PASSWORD) {
+        // Правильный пароль
+        sessionStorage.setItem('authenticated', 'true');
+        passwordScreen.style.opacity = '0';
+        setTimeout(() => {
+          passwordScreen.style.display = 'none';
+          app.style.display = 'block';
+        }, 500);
+      } else {
+        // Неверный пароль
+        passwordError.classList.add('show');
+        passwordInput.value = '';
+        setTimeout(() => {
+          passwordError.classList.remove('show');
+        }, 3000);
+      }
+    }
+
+    // === DATA: 9 глав (9-я финальная — игра по сцене) ===
+    const chapters = [
+      {id:0, title:'Глава 1 — Первая встреча', img:placeholderSVG('Встреча у подъезда, чай и бисквит'), dialogue:[
+        {speaker:'Никита', text:'Мы тогда только по тг общались, и вот я решился приехать к тебе с пачкой бисквита и чаем.'},
+        {speaker:'Ева', text:'Ахаха, я реально вышла как бомжик в домашних шмотках и в шлёпках.'},
+        {speaker:'Никита', text:'Ты хотела меня обнять — и я сначала немного застеснялся, помня, что ты не очень любишь тактильность.'},
+        {speaker:'Ева', text:'Но ты всё равно обнял. Я это запомнила.'},
+        {speaker:'Никита', text:'Я потом убежал, как дурак, но этот момент стал началом.'}
+      ], tasks:[{text:'Вспомни и расскажи, что ты почувствовала в тот момент', type:'text'}]},
+
+      {id:1, title:'Глава 2 — Первые руки', img:placeholderSVG('Прогулка по трассе'), dialogue:[
+        {speaker:'Никита', text:'Мы тогда просто шли по трассе, никакой романтики, лишь дорога и разговоры.'},
+        {speaker:'Ева', text:'Но именно там мы впервые взялись за руки... и это было такое ощущение.'},
+        {speaker:'Никита', text:'Я так волновался, реально, сердце билось пиздец быстро, руки потели — запомнил этот момент на всю жизнь.'},
+        {speaker:'Ева', text:'Я тоже волновалась. Но мне было тепло и спокойно рядом с тобой.'},
+        {speaker:'Никита', text:'Да, я боялся всё испортить, но нам повезло.'}
+      ], tasks:[{text:'Опиши, что ты тогда чувствовала, когда мы взялись за руки', type:'text'}]},
+
+      {id:2, title:'Глава 3 — Первый поцелуй', img:placeholderSVG('Поцелуй у двора дома'), dialogue:[
+        {speaker:'Никита', text:'Это было у тебя во дворе: ты схватила меня за шею, и мир на секунду остановился.'},
+        {speaker:'Ева', text:'И у тебя даже бутылка колы выпала из рук — я чуть не расплакалась от смеха.'},
+        {speaker:'Никита', text:'Это был мой первый поцелуй. Я безумно счастлив, что он был с тобой.'},
+        {speaker:'Ева', text:'А я рада, что смогла подарить тебе этот момент.'}
+      ], tasks:[{text:'Вспомни и повтори атмосферу того поцелуя (в мыслях или вслух)', type:'action'}]},
+
+      {id:3, title:'Глава 4 — Знакомство с родителями', img:placeholderSVG('Вечер у родителей'), dialogue:[
+        {speaker:'Ева', text:'Спасибо, что пришёл познакомиться с моими родителями — мне это было очень нужно.'},
+        {speaker:'Никита', text:'Для тебя я готов на многое. Ты моё всё.'},
+        {speaker:'Ева', text:'Я так боялась, как они тебя примут, а ты был таким заботливым.'},
+        {speaker:'Никита', text:'Мы выдержали это вместе — и это нас только сблизило.'}
+      ], tasks:[{text:'Расскажи, что особенно запомнилось в том знакомстве', type:'text'}]},
+
+      {id:4, title:'Глава 5 — Первая "тарелочка"', img:placeholderSVG('Тихий вечер дома'), dialogue:[
+        {speaker:'Никита', text:'Мы шутили про "помыть посуду" — и пранчили, называя это "тарелочкой". Я так подшучивал: \"вылезай, вылизывай посуду\".'},
+        {speaker:'Ева', text:'Я тогда очень боялась, что после этого ты захочешь большего и всё пойдёт не так.'},
+        {speaker:'Никита', text:'Но я просто встал, вышел, принес тебе воды и целый день был рядом. Я хотел, чтобы ты чувствовала себя спокойно.'},
+        {speaker:'Ева', text:'Это было для меня значимо — не давление, а забота. Спасибо.'}
+      ], tasks:[{text:'Поделись, как ты тогда восприняла мою заботу (в мыслях или в сообщении)', type:'text'}]},
+
+      {id:5, title:'Глава 6 — День рождения (готовил подарок)', img:placeholderSVG('Поиск подарка и экономия'), dialogue:[
+        {speaker:'Никита', text:'Я долго копил на подарок — буквально собирал деньги по мелочи и платил за всё, когда мог.'},
+        {speaker:'Ева', text:'Я помню, у тебя было тяжело — ты платил за нас, хотя сам экономил на простых вещах.'},
+        {speaker:'Никита', text:'Это было сложно, я даже не держал эти деньги в руках, но сделал всё, чтобы накопить и выбрать что-то важное.'},
+        {speaker:'Ева', text:'И ты сделал это. Я до сих пор не верю, как ты всё организовал.'}
+      ], tasks:[{text:'Напиши, за что ты ценишь мои старания в тот период', type:'text'}]},
+
+      {id:6, title:'Глава 7 — День рождения (вечером)', img:placeholderSVG('Вечер с друзьями и уединение'), dialogue:[
+        {speaker:'Никита', text:'Я пришёл помогать с салатами, готовил как мог — очень деревянно, но с душой.'},
+        {speaker:'Ева', text:'Мы все смеялись: ты смешно резал огурцы, но был рядом.'},
+        {speaker:'Никита', text:'После вечера, когда все немного набухали, мы уединились — ласкали друг друга, обсуждали подарки и просто были рядом.'},
+        {speaker:'Ева', text:'Это была тёплая ночь: и салаты, и смех, и тепло под пледом.'}
+      ], tasks:[{text:'Вспомни тот вечер: что тебе было важно тогда (не торопись)', type:'text'}]},
+
+      {id:7, title:'Глава 8 — Год вместе', img:placeholderSVG('Годовщина и подарок'), dialogue:[
+        {speaker:'Никита', text:'Прошёл год — самый романтичный год в моей жизни. Мы прошли многое.'},
+        {speaker:'Ева', text:'Спасибо, что был со мной в трудные моменты и радостные тоже.'},
+        {speaker:'Никита', text:'Вот твой маленький подарок — знак того, что я ценю каждый момент с тобой.'},
+        {speaker:'Ева', text:'Я так тронута. Этот год был нашим.'}
+      ], tasks:[{text:'Напиши поздравление и пожелание на следующий год вместе', type:'text'}]},
+
+      {id:8, title:'Глава 9 — Игра (сцена из "Клуб романтики")', img:placeholderSVG('Игровая сцена и согласие'), dialogue:[
+        {speaker:'Никита', text:'Слушай, давай сыграем в одну игру: ты выбираешь любую сцену из твоей манги "Клуб романтики" — мы её проигрываем, честно и по согласию.'},
+        {speaker:'Ева', text:'Это... звучит дерзко. Но если это то, чего я хочу, и если мы оба согласны — да.'},
+        {speaker:'Никита', text:'Мы заранее обговорим границы. Главное — взаимное согласие и комфорт.'},
+        {speaker:'Ева', text:'Хорошо. Я доверяю тебе. И потом — твой подарок.'},
+        {speaker:'Никита', text:'Да, после того, как ты откроешьсь — у меня есть сюрприз для тебя.'}
+      ], tasks:[{text:'Обсудите и запишите ваши границы и согласия перед игрой', type:'text'}]}
+    ];
+
+    // === state & storage ===
+    let current = Number(localStorage.getItem('currentChapter') || 0);
+    let done = JSON.parse(localStorage.getItem('doneTasks') || '{}');
+
+    function ensureDoneStructure(){
+      chapters.forEach(ch=>{
+        if(!Array.isArray(done[ch.id])) done[ch.id] = new Array(ch.tasks.length).fill(false);
+        if(done[ch.id].length !== ch.tasks.length){
+          const arr = done[ch.id] || [];
+          const newArr = arr.slice(0, ch.tasks.length).concat(new Array(Math.max(0, ch.tasks.length - arr.length)).fill(false));
+          done[ch.id] = newArr;
+        }
+      });
+      saveDone();
+    }
+    function saveDone(){ localStorage.setItem('doneTasks', JSON.stringify(done)); }
+    function saveCurrent(){ localStorage.setItem('currentChapter', String(current)); }
+
+    // === elements ===
+    const chaptersEl = document.getElementById('chapters');
+    const pageEl = document.getElementById('page');
+    const taskListEl = document.getElementById('taskList');
+    const finalEl = document.getElementById('final');
+    const progressEl = document.getElementById('progress');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalText = document.getElementById('modalText');
+    const modalIcon = document.getElementById('modalIcon');
+    const modalClose = document.getElementById('modalClose');
+    const modalShowTasks = document.getElementById('modalShowTasks');
+    const claimBtn = document.getElementById('claimBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const controls = document.getElementById('controls');
+
+    modalClose.addEventListener('click', hideModal);
+    modalShowTasks.addEventListener('click', ()=>{ hideModal(); scrollToTasks(); });
+
+    function showModal(title, text, icon='💡'){
+      modalTitle.textContent = title || 'Не спеши';
+      modalText.textContent = text || 'Сначала выполни все задания этой главы, а потом переходи дальше.';
+      modalIcon.textContent = icon;
+      modal.classList.add('show');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+    function hideModal(){ modal.classList.remove('show'); modal.setAttribute('aria-hidden', 'true'); }
+
+    function scrollToTasks(){
+      const tasksBlock = document.getElementById('tasks');
+      if(tasksBlock) tasksBlock.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+
+    // === render functions ===
+    function renderChapters(){
+      chaptersEl.innerHTML = '';
+      chapters.forEach(ch=>{
+        const el = document.createElement('div');
+        const isActive = ch.id === current;
+        el.className = 'chapter' + (isActive? ' active':'');
+        const blocked = ch.id > current && !allTasksDoneForChapter(current);
+        if(blocked) el.classList.add('disabled');
+
+        el.innerHTML = `<div>${escapeHtml(ch.title)}</div><div style="color:var(--muted); font-size:13px">${ch.tasks.length} задание(й)</div>`;
+        el.addEventListener('click', ()=>{
+          if(ch.id > current && !allTasksDoneForChapter(current)){
+            showModal('Сначала задания', 'Выполни задания текущей главы, чтобы открыть следующую.', '⚠️');
+            return;
+          }
+          current = ch.id;
+          saveCurrent();
+          render();
+        });
+        chaptersEl.appendChild(el);
+      });
+    }
+
+    let revealTimeouts = [];
+    function clearRevealTimeouts(){ revealTimeouts.forEach(id=>clearTimeout(id)); revealTimeouts = []; }
+
+    function renderPage(){
+      const ch = chapters[current];
+      pageEl.setAttribute('aria-label', ch.title);
+      pageEl.classList.remove('show');
+      clearRevealTimeouts();
+      setTimeout(()=>{
+        let html = `<div style="max-width:760px;margin:0 auto">${ch.img}<h2 style="margin:12px 0 12px">${escapeHtml(ch.title)}</h2><div class="dialogue">`;
+        ch.dialogue.forEach((d, idx)=>{
+          const who = d.speaker === 'Никита' ? 'me' : 'eva';
+          html += `<div class="bubble ${who}" data-idx="${idx}" aria-hidden="true"><div class="speaker">${escapeHtml(d.speaker)}</div><div class="bubble-text">${escapeHtml(d.text)}</div></div>`;
+        });
+        html += `</div></div>`;
+        pageEl.innerHTML = html;
+        pageEl.classList.add('show');
+
+        // reveal bubbles sequentially
+        const bubbles = Array.from(pageEl.querySelectorAll('.bubble'));
+        bubbles.forEach((b, i)=>{
+          const t = setTimeout(()=>{ b.classList.add('show'); b.setAttribute('aria-hidden','false'); }, 220 * i);
+          revealTimeouts.push(t);
+          b.addEventListener('click', revealAll);
+        });
+      },80);
+
+      // Hide "next" if last chapter (end of story)
+      const lastIndex = chapters.length - 1;
+      if(current >= lastIndex){
+        nextBtn.style.display = 'none';
+      } else {
+        nextBtn.style.display = '';
+      }
+    }
+
+    function revealAll(){
+      clearRevealTimeouts();
+      const bubbles = Array.from(pageEl.querySelectorAll('.bubble'));
+      bubbles.forEach(b=>{ b.classList.add('show'); b.setAttribute('aria-hidden','false'); });
+    }
+
+    function renderTasks(){
+      const ch = chapters[current];
+      taskListEl.innerHTML = '';
+      done[ch.id] = done[ch.id] || new Array(ch.tasks.length).fill(false);
+
+      ch.tasks.forEach((t,i)=>{
+        const div = document.createElement('div');
+        div.className='task';
+        const id = `task-${ch.id}-${i}`;
+        let extra = '';
+        if(t.type === 'private') extra = '<div style="font-size:12px;color:var(--muted);margin-left:auto">Приватно</div>';
+
+        div.innerHTML = `
+          <input type="checkbox" id="${id}" ${done[ch.id][i]? 'checked':''} />
+          <label for="${id}">${escapeHtml(t.text)}</label>
+          ${extra}
+        `;
+        taskListEl.appendChild(div);
+
+        const input = document.getElementById(id);
+        input.addEventListener('change', (e)=>{
+          done[ch.id][i] = e.target.checked;
+          saveDone();
+          checkAllDone();
+          updateProgress();
+          renderChapters();
+        });
+      });
+    }
+
+    function allTasksDoneForChapter(chId){
+      return Array.isArray(done[chId]) && done[chId].length > 0 && done[chId].every(Boolean);
+    }
+
+    function checkAllDone(){
+      const all = chapters.every(ch=> allTasksDoneForChapter(ch.id));
+      if(all){ finalEl.classList.add('show'); finalEl.setAttribute('aria-hidden','false'); }
+      else{ finalEl.classList.remove('show'); finalEl.setAttribute('aria-hidden','true'); }
+    }
+
+    function updateProgress(){
+      const totalTasks = chapters.reduce((a,ch)=>a+ch.tasks.length,0);
+      const doneTasks = Object.keys(done).reduce((acc,k)=> acc + (Array.isArray(done[k]) ? done[k].filter(Boolean).length : 0), 0);
+      const percent = totalTasks === 0 ? 0 : Math.round((doneTasks/totalTasks)*100);
+      progressEl.style.width = percent + '%';
+    }
+
+    function renderFlower(){
+      const el = document.getElementById('flowerSVG');
+      if(!el) return;
+      el.innerHTML = `
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(60,40)">
+            <g>
+              <circle r="10" fill="#ff9b9b" />
+              <circle r="6" fill="#ff6b6b" />
+            </g>
+            <g transform="rotate(45)">
+              <ellipse rx="14" ry="6" fill="#ff9b9b" />
+            </g>
+            <g transform="rotate(90)">
+              <ellipse rx="14" ry="6" fill="#ff9b9b" />
+            </g>
+            <g transform="rotate(135)">
+              <ellipse rx="14" ry="6" fill="#ff9b9b" />
+            </g>
+            <g transform="translate(-10,28)">
+              <rect x="0" y="0" width="8" height="36" rx="4" fill="#5d8a5d" transform="rotate(-10)" />
+              <rect x="8" y="0" width="8" height="36" rx="4" fill="#4f7a4f" transform="rotate(10)" />
+            </g>
+          </g>
+        </svg>
+      `;
+    }
+
+    function render(){
+      ensureDoneStructure();
+      renderChapters();
+      renderPage();
+      renderTasks();
+      renderFlower();
+      checkAllDone();
+      updateProgress();
+    }
+
+    // === controls ===
+    prevBtn.addEventListener('click', ()=>{
+      if(current>0){ current--; saveCurrent(); render(); }
+    });
+
+    nextBtn.addEventListener('click', ()=>{
+      if(!allTasksDoneForChapter(current)){
+        showModal('Не завершено', 'Чтобы перейти дальше — сначала отметь задания этой главы как выполненные.', '⚠️');
+        return;
+      }
+      if(current < chapters.length - 1){ current++; saveCurrent(); render(); }
+    });
+
+    claimBtn.addEventListener('click', ()=>{
+      showModal('Поздравляем!', 'Ты прошла все задания — договоритесь о вручении букета.', '🎁');
+    });
+
+    // === helpers ===
+    function placeholderSVG(text){
+      const escaped = escapeHtml(text);
+      return `
+        <svg width="100%" height="220" viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg" style="border-radius:8px; background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));">
+          <defs>
+            <linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#0b2233"/><stop offset="1" stop-color="#082b40"/></linearGradient>
+          </defs>
+          <rect width="900" height="220" fill="url(#g1)" rx="12"/>
+          <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="28" fill="#9fb3c8">${escaped}</text>
+        </svg>
+      `;
+    }
+
+    function escapeHtml(str){
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // Accessibility: close modal on Escape
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') hideModal(); });
+
+    // initial render (только если пользователь авторизован)
+    if (isAuthenticated) {
+      render();
+    }
+  </script>
+</body>
+</html>
